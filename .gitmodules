@@ -1,0 +1,3 @@
+[submodule "one"]
+	path = one
+	url = https://github.com/wanweiwei07/one.git
