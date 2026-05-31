@@ -67,8 +67,9 @@ source .venv/bin/activate
 `one` と MySQL connector をインストールします。
 
 ```bash
-python -m pip install -e ./one
-python -m pip install mysql-connector-python
+pip install -e ./one
+pip install mysql-connector-python
+pip install matplotlib
 ```
 
 ## DB 接続設定
@@ -227,5 +228,6 @@ python scripts/preview_manipulation_random.py
 
 - `one` は外部ライブラリです。submodule を取得したあと、`python -m pip install -e ./one` でインストールしてください。
 - DB パスワードはスクリプトに直接書かず、環境変数で管理してください。
+- `generate_grasp.py` はまず GPU 衝突判定を使い、失敗した場合は CPU 衝突判定で再実行します。
 - `generate_placement.py` と `generate_placement_grasp_ik.py` は UNIQUE 制約を使っているため、同じ組み合わせについては再実行しやすい作りになっています。
 - `generate_stable_pose.py` と `generate_grasp.py` は生成結果を追記します。完全に作り直したい場合は、空のデータベースから SQL を実行し直してください。

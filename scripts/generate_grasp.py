@@ -3,7 +3,7 @@ import numpy as np
 import mysql.connector
 
 from one import ouc, osso, or_2fg7, oum
-from one.grasp.antipodal import antipodal
+import one.grasp.antipodal as og_antipodal
 
 from db_config import DB_CONFIG
 from paths import BUNNY_MESH_PATH
@@ -17,6 +17,31 @@ def ndarray_to_blob(arr: np.ndarray) -> bytes:
 
 def blob_to_ndarray(blob: bytes) -> np.ndarray:
     return np.load(io.BytesIO(blob))
+
+
+def compute_grasps(gripper, bunny):
+    kwargs = {
+        "gripper": gripper,
+        "target_sobj": bunny,
+        "density": 0.01,
+        "normal_tol_deg": 20,
+        "roll_step_deg": 30,
+        "max_grasps": 80,
+    }
+
+    try:
+        print("Trying GPU collision checker...")
+        return og_antipodal.antipodal(**kwargs)
+    except Exception as exc:
+        print("GPU collision checker failed:", repr(exc))
+        print("Retrying with CPU collision checker...")
+
+        original_gpu_module = og_antipodal.ocgcb
+        try:
+            og_antipodal.ocgcb = og_antipodal.occs
+            return og_antipodal.antipodal(**kwargs)
+        finally:
+            og_antipodal.ocgcb = original_gpu_module
 
 
 def main():
@@ -57,14 +82,7 @@ def main():
 
     print("Computing antipodal grasps...")
 
-    grasps = antipodal(
-        gripper=gripper,
-        target_sobj=bunny,
-        density=0.01,
-        normal_tol_deg=20,
-        roll_step_deg=30,
-        max_grasps=80,
-    )
+    grasps = compute_grasps(gripper, bunny)
 
     print("Found grasps:", len(grasps))
 
