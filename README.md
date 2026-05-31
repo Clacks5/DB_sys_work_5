@@ -46,32 +46,46 @@ git submodule update --init --recursive
 https://github.com/wanweiwei07/one.git
 ```
 
-仮想環境を作成して有効化します。
+仮想環境を作成します。
+
+```bash
+python -m venv .venv
+```
+
+仮想環境の有効化だけ OS によって異なります。
 
 ```powershell
-python -m venv .venv
+# Windows / PowerShell
 .\.venv\Scripts\Activate.ps1
+```
+
+```bash
+# Ubuntu / bash
+source .venv/bin/activate
 ```
 
 `one` と MySQL connector をインストールします。
 
-```powershell
-pip install -e .\one
-pip install mysql-connector-python
+```bash
+python -m pip install -e ./one
+python -m pip install mysql-connector-python
 ```
 
 ## DB 接続設定
 
-Python スクリプトは、MySQL の接続情報を環境変数から読みます。各自の環境に合わせて設定してください。
-
-PowerShell の例:
+Python スクリプトは、MySQL の接続情報を環境変数から読みます。データベース名やユーザー名を変更していなければ、最低限パスワードだけをスクリプト実行前に同じターミナルで設定してください。
 
 ```powershell
-$env:GRASP_BUNNY_DB_HOST = "localhost"
-$env:GRASP_BUNNY_DB_USER = "root"
+# Windows / PowerShell
 $env:GRASP_BUNNY_DB_PASSWORD = "your_password"
-$env:GRASP_BUNNY_DB_NAME = "grasp_bunny"
 ```
+
+```bash
+# Ubuntu / bash
+export GRASP_BUNNY_DB_PASSWORD="your_password"
+```
+
+この設定は、そのターミナルを開いている間だけ有効です。
 
 未設定の場合は、次の値が使われます。
 
@@ -123,25 +137,25 @@ SQL 側でも、同じパスが `object.mesh_path` に登録されます。
 安定姿勢を生成します。
 
 ```powershell
-python scripts\generate_stable_pose.py
+python scripts/generate_stable_pose.py
 ```
 
 配置候補を生成します。
 
 ```powershell
-python scripts\generate_placement.py
+python scripts/generate_placement.py
 ```
 
 把持候補を生成します。
 
 ```powershell
-python scripts\generate_grasp.py
+python scripts/generate_grasp.py
 ```
 
 各「配置候補 x 把持候補」に対して IK を確認します。
 
 ```powershell
-python scripts\generate_placement_grasp_ik.py
+python scripts/generate_placement_grasp_ik.py
 ```
 
 最後のステップは、配置候補数と把持候補数の積だけ評価するため、少し時間がかかる場合があります。
@@ -151,31 +165,31 @@ python scripts\generate_placement_grasp_ik.py
 安定姿勢を確認します。
 
 ```powershell
-python scripts\check_stable_pose.py
+python scripts/check_stable_pose.py
 ```
 
 配置候補を確認します。
 
 ```powershell
-python scripts\check_placement.py
+python scripts/check_placement.py
 ```
 
 把持候補を確認します。
 
 ```powershell
-python scripts\check_grasp.py
+python scripts/check_grasp.py
 ```
 
 IK に成功した操作候補を確認します。
 
 ```powershell
-python scripts\preview_manipulation.py
+python scripts/preview_manipulation.py
 ```
 
 IK に成功した候補をランダムに連続表示します。
 
 ```powershell
-python scripts\preview_manipulation_random.py
+python scripts/preview_manipulation_random.py
 ```
 
 ビューア操作:
@@ -211,7 +225,7 @@ python scripts\preview_manipulation_random.py
 
 ## 注意
 
-- `one` は外部ライブラリです。submodule を取得したあと、`pip install -e .\one` でインストールしてください。
+- `one` は外部ライブラリです。submodule を取得したあと、`python -m pip install -e ./one` でインストールしてください。
 - DB パスワードはスクリプトに直接書かず、環境変数で管理してください。
 - `generate_placement.py` と `generate_placement_grasp_ik.py` は UNIQUE 制約を使っているため、同じ組み合わせについては再実行しやすい作りになっています。
 - `generate_stable_pose.py` と `generate_grasp.py` は生成結果を追記します。完全に作り直したい場合は、空のデータベースから SQL を実行し直してください。
