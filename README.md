@@ -30,8 +30,8 @@ Python パッケージ:
 このリポジトリは `one` を Git submodule として使います。clone するときは submodule も一緒に取得してください。
 
 ```powershell
-git clone --recurse-submodules <this-repository-url>
-cd db_sys_work_5
+git clone --recurse-submodules https://github.com/Clacks5/grasp_bunny.git
+cd grasp_bunny
 ```
 
 submodule なしで clone した場合は、後から初期化できます。
