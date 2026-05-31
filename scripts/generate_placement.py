@@ -1,8 +1,15 @@
 import io
+from datetime import datetime
+
 import numpy as np
 import mysql.connector
 
 from db_config import DB_CONFIG
+
+
+def log(message: str):
+    now = datetime.now().strftime("%H:%M:%S")
+    print(f"[{now}] {message}", flush=True)
 
 
 def ndarray_to_blob(arr: np.ndarray) -> bytes:
@@ -31,9 +38,11 @@ def rotmat_z(deg: float) -> np.ndarray:
 
 
 def main():
+    log("connecting to database")
     conn = mysql.connector.connect(**DB_CONFIG)
     cur = conn.cursor()
 
+    log("loading stable poses")
     cur.execute(
         """
         SELECT stable_pose_id, pos, rotmat
@@ -43,6 +52,7 @@ def main():
     )
     stable_poses = cur.fetchall()
 
+    log("loading XY translations")
     cur.execute(
         """
         SELECT xy_id, x, y
@@ -52,6 +62,7 @@ def main():
     )
     xy_rows = cur.fetchall()
 
+    log("loading yaw angles")
     cur.execute(
         """
         SELECT yaw_id, yaw_deg
@@ -61,11 +72,18 @@ def main():
     )
     yaw_rows = cur.fetchall()
 
+    total = len(stable_poses) * len(xy_rows) * len(yaw_rows)
+    log(f"stable_pose count: {len(stable_poses)}")
+    log(f"translation_xy count: {len(xy_rows)}")
+    log(f"yaw_angle count: {len(yaw_rows)}")
+    log(f"placement candidates: {total}")
+
     count = 0
 
-    for stable_pose_id, pos_blob, rot_blob in stable_poses:
+    for sp_i, (stable_pose_id, pos_blob, rot_blob) in enumerate(stable_poses, start=1):
         stable_pos = blob_to_ndarray(pos_blob).astype(np.float64)
         stable_rotmat = blob_to_ndarray(rot_blob).astype(np.float64)
+        log(f"stable pose {sp_i}/{len(stable_poses)} started (stable_pose_id={stable_pose_id})")
 
         for xy_id, x, y in xy_rows:
             for yaw_id, yaw_deg in yaw_rows:
@@ -99,12 +117,11 @@ def main():
 
                 count += 1
 
-    conn.commit()
+        log(f"stable pose {sp_i}/{len(stable_poses)} done, generated {count}/{total}")
 
-    print("stable_pose count:", len(stable_poses))
-    print("translation_xy count:", len(xy_rows))
-    print("yaw_angle count:", len(yaw_rows))
-    print("placement candidates:", count)
+    conn.commit()
+    log("database commit completed")
+    log(f"placement candidates processed: {count}")
 
     cur.close()
     conn.close()
