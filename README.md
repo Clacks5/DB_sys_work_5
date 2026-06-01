@@ -11,6 +11,9 @@
 5. Kawasaki RS007L ロボットで各「配置候補 x 把持候補」に対して IK を解く
 6. IK に成功した候補を `one` のビューアで確認する
 
+20260531時点のE-R図↓
+[20260531_E-R図]("https://github.com/Clacks5/grasp_bunny/blob/main/E-R_diagram.png")
+
 ロボット、把持、IK、可視化などの機能は外部ライブラリ [`wanweiwei07/one`](https://github.com/wanweiwei07/one) を使っています。このリポジトリは、その上に載せる SQL スキーマと実験スクリプトをまとめたものです。
 
 ## 必要なもの
