@@ -234,3 +234,60 @@ python scripts/preview_manipulation_random.py
 - `generate_grasp.py` はまず GPU 衝突判定を使い、失敗した場合は CPU 衝突判定で再実行します。
 - `generate_placement.py` と `generate_placement_grasp_ik.py` は UNIQUE 制約を使っているため、同じ組み合わせについては再実行しやすい作りになっています。
 - `generate_stable_pose.py` と `generate_grasp.py` は生成結果を追記します。完全に作り直したい場合は、空のデータベースから SQL を実行し直してください。
+
+
+
+## チーム開発・軽量プレビュー（環境構築不要）
+
+ハイスペックPCでの重い経路探索（PRM）結果をポータブルなデータファイルとして書き出し、他のメンバーがデータベース環境なしでプレビューおよび動画保存（MP4）できる仕組みを用意しています。
+
+### 1. データの書き出し（計算担当者向け）
+経路計算（`generate_path_plan.py`）が完了したPCで以下のスクリプトを実行し、計算結果を抽出します。
+
+```bash
+python scripts/export_portable_data.py
+
+```
+
+実行後、ディレクトリに `portable_paths.pkl` というファイルが生成されます。このファイルと、プレビュー用のスクリプトを他のメンバーに共有してください。
+
+### 2. 軽量プレビューと自動録画（確認メンバー向け）
+
+共有された `portable_paths.pkl` をリポジトリのルートディレクトリに配置し、以下のスクリプトを実行します。**MySQLの環境構築やパスワード設定は一切不要です。**
+
+```bash
+python scripts/auto_record_preview.py
+
+```
+
+実行すると、計算済みの経路の中からランダムに1つが選ばれて3Dビューアで再生されます。再生が完了すると、カレントディレクトリに MP4 ファイル（例: `auto_record_pgik_123.mp4`）が自動保存され、ウィンドウが閉じます。
+
+## ディレクトリ構成
+
+```text
+.
+├── README.md
+├── sql
+│   ├── 00_create_db.sql
+│   ├── 01_create_table.sql
+│   ├── 02_insert_bunny_2_object.sql
+│   └── 03_insert_bunny_arrangement.sql
+├── scripts
+│   ├── db_config.py
+│   ├── paths.py
+│   ├── generate_stable_pose.py
+│   ├── generate_placement.py
+│   ├── generate_grasp.py
+│   ├── generate_placement_grasp_ik.py
+│   ├── generate_path_plan.py          # [新規] 障害物回避経路(PRM)の計算とDB保存
+│   ├── check_stable_pose.py
+│   ├── check_placement.py
+│   ├── check_grasp.py
+│   ├── preview_manipulation.py
+│   ├── preview_manipulation_random.py
+│   ├── preview_from_db.py             # [新規] DBから経路を読み込んで軽量プレビュー
+│   ├── export_portable_data.py        # [新規] 他メンバー共有用データ(.pkl)の書き出し
+│   └── auto_record_preview.py         # [新規] 環境構築不要の自動録画プレビュー
+├── portable_paths.pkl                 # [生成物] export_portable_data.py で出力される共有用データ
+└── one
+    └── 外部ライブラリ one と bunny メッシュ
